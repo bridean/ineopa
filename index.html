@@ -1,0 +1,66 @@
+<!DOCTYPE html>
+<html lang="en">
+<head>
+    <meta charset="utf-8" />
+    <title>Hello World</title>
+    <link rel="stylesheet" href="main.css" />
+</head>
+<body>
+    <h1>Hello World</h1>
+    <h2>This is powered by Codex.</h2>
+    <section class="color-grid" aria-label="Random color grid">
+        <div class="color-grid__cell"></div>
+        <div class="color-grid__cell"></div>
+        <div class="color-grid__cell"></div>
+        <div class="color-grid__cell"></div>
+        <div class="color-grid__cell"></div>
+        <div class="color-grid__cell"></div>
+        <div class="color-grid__cell"></div>
+        <div class="color-grid__cell"></div>
+        <div class="color-grid__cell"></div>
+        <div class="color-grid__cell"></div>
+        <div class="color-grid__cell"></div>
+        <div class="color-grid__cell"></div>
+        <div class="color-grid__cell"></div>
+        <div class="color-grid__cell"></div>
+        <div class="color-grid__cell"></div>
+        <div class="color-grid__cell"></div>
+        <div class="color-grid__cell"></div>
+        <div class="color-grid__cell"></div>
+    </section>
+    <section class="test-links" aria-label="Test pages">
+        <div class="test-links__grid"></div>
+    </section>
+    <script>
+        const cells = document.querySelectorAll('.color-grid__cell');
+        const randomColor = () => `hsl(${Math.floor(Math.random() * 360)}, ${60 + Math.random() * 40}%, ${45 + Math.random() * 20}%)`;
+
+        const paintCells = () => {
+            cells.forEach(cell => {
+                cell.style.backgroundColor = randomColor();
+            });
+        };
+
+        paintCells();
+        setInterval(paintCells, 100);
+
+        const linksGrid = document.querySelector('.test-links__grid');
+        if (linksGrid) {
+            const createLink = (index) => {
+                const fileName = index.toString().padStart(3, '0');
+                const anchor = document.createElement('a');
+                anchor.className = 'test-links__item';
+                anchor.href = `tests/${fileName}.html`;
+                anchor.target = '_blank';
+                anchor.rel = 'noopener noreferrer';
+                anchor.textContent = `${fileName}.html`;
+                return anchor;
+            };
+
+            for (let i = 0; i < 100; i += 1) {
+                linksGrid.appendChild(createLink(i));
+            }
+        }
+    </script>
+</body>
+</html>

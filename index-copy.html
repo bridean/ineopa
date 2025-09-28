@@ -1,0 +1,71 @@
+<!DOCTYPE html>
+<html lang="en">
+<head>
+    <meta charset="utf-8" />
+    <title>Hello World</title>
+    <style>
+        body {
+            font-family: Arial, sans-serif;
+            margin: 0;
+            padding: 2rem;
+        }
+
+        h1,
+        h2 {
+            margin: 0 0 1rem;
+        }
+
+        .color-grid {
+            display: grid;
+            grid-template-columns: repeat(6, 1fr);
+            gap: 12px;
+            width: 80%;
+            margin: 2rem auto;
+        }
+
+        @media (max-width: 600px) {
+            .color-grid {
+                width: 100%;
+                grid-template-columns: repeat(auto-fit, minmax(120px, 1fr));
+            }
+        }
+
+        .color-grid__cell {
+            aspect-ratio: 1 / 1;
+            border-radius: 8px;
+        }
+    </style>
+</head>
+<body>
+    <h1>Hello World</h1>
+    <h2 style="color: rebeccapurple;">This is powered by Codex.</h2>
+    <section class="color-grid" aria-label="Random color grid">
+        <div class="color-grid__cell"></div>
+        <div class="color-grid__cell"></div>
+        <div class="color-grid__cell"></div>
+        <div class="color-grid__cell"></div>
+        <div class="color-grid__cell"></div>
+        <div class="color-grid__cell"></div>
+        <div class="color-grid__cell"></div>
+        <div class="color-grid__cell"></div>
+        <div class="color-grid__cell"></div>
+        <div class="color-grid__cell"></div>
+        <div class="color-grid__cell"></div>
+        <div class="color-grid__cell"></div>
+        <div class="color-grid__cell"></div>
+        <div class="color-grid__cell"></div>
+        <div class="color-grid__cell"></div>
+        <div class="color-grid__cell"></div>
+        <div class="color-grid__cell"></div>
+        <div class="color-grid__cell"></div>
+    </section>
+    <script>
+        const cells = document.querySelectorAll('.color-grid__cell');
+        const randomColor = () => `hsl(${Math.floor(Math.random() * 360)}, ${60 + Math.random() * 40}%, ${45 + Math.random() * 20}%)`;
+
+        cells.forEach(cell => {
+            cell.style.backgroundColor = randomColor();
+        });
+    </script>
+</body>
+</html>
