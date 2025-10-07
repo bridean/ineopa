@@ -6,9 +6,8 @@
     <link rel="stylesheet" href="main.css" />
 </head>
 <body>
-    <h1>Hello World</h1>
-    <p>testing testing.. 1</p>
-    <h2>This is powered by Codex.</h2>
+    <h1><span class="site-title__badge" aria-hidden="true">AI</span><span class="sr-only">OpenAI-assisted</span> Codex-VSC Integration</h1>
+    <h2>Everything in this directory is powered by OpenAI's Codex, integrated with Visual Studio Code. Purely experimental for my testing, practicing & amusement.</h2>
     <section class="color-grid" aria-label="Random color grid">
         <div class="color-grid__cell"></div>
         <div class="color-grid__cell"></div>
@@ -34,7 +33,13 @@
     </section>
     <script>
         const cells = document.querySelectorAll('.color-grid__cell');
-        const randomColor = () => `hsl(${Math.floor(Math.random() * 360)}, ${60 + Math.random() * 40}%, ${45 + Math.random() * 20}%)`;
+        const randomColor = () => {
+            const channel = () => Math.floor(Math.random() * 111) + 60; // 60-170 range keeps tones muted
+            const channels = [channel(), channel(), channel()];
+            const dimIndex = Math.floor(Math.random() * 3);
+            channels[dimIndex] = Math.max(0, channels[dimIndex] - 40);
+            return `rgb(${channels[0]}, ${channels[1]}, ${channels[2]})`;
+        };
 
         const paintCells = () => {
             cells.forEach(cell => {
@@ -43,7 +48,8 @@
         };
 
         paintCells();
-        setInterval(paintCells, 100);
+        //line below: speed. 1000 = 1 second interval of bg change state
+        setInterval(paintCells, 50);
 
         const linksGrid = document.querySelector('.test-links__grid');
         if (linksGrid) {
@@ -58,9 +64,72 @@
                 return anchor;
             };
 
+            const interestingClass = 'test-links__item--rich';
+            const anchors = [];
             for (let i = 0; i < 100; i += 1) {
-                linksGrid.appendChild(createLink(i));
+                const anchor = createLink(i);
+                linksGrid.appendChild(anchor);
+                anchors.push(anchor);
             }
+
+            const inspectorFrame = document.createElement('iframe');
+            inspectorFrame.setAttribute('aria-hidden', 'true');
+            inspectorFrame.style.position = 'fixed';
+            inspectorFrame.style.width = '1px';
+            inspectorFrame.style.height = '1px';
+            inspectorFrame.style.opacity = '0';
+            inspectorFrame.style.pointerEvents = 'none';
+            document.body.appendChild(inspectorFrame);
+
+            const queue = anchors.map(anchor => ({
+                anchor,
+                url: new URL(anchor.getAttribute('href'), window.location.href).href,
+            }));
+
+            const pending = new Map();
+            const TIMEOUT = 3000;
+
+            const loadNext = () => {
+                if (!queue.length) {
+                    inspectorFrame.remove();
+                    return;
+                }
+
+                const { anchor, url } = queue.shift();
+                const timeoutId = window.setTimeout(() => {
+                    if (!pending.has(url)) {
+                        return;
+                    }
+                    pending.delete(url);
+                    loadNext();
+                }, TIMEOUT);
+
+                pending.set(url, { anchor, timeoutId });
+                inspectorFrame.src = url;
+            };
+
+            window.addEventListener('message', (event) => {
+                const data = event.data;
+                if (!data || data.type !== 'test-page-analysis') {
+                    return;
+                }
+
+                const pendingEntry = pending.get(data.url);
+                if (!pendingEntry) {
+                    return;
+                }
+
+                pending.delete(data.url);
+                window.clearTimeout(pendingEntry.timeoutId);
+                const { anchor } = pendingEntry;
+                if (data.hasRichContent) {
+                    anchor.classList.add(interestingClass);
+                }
+
+                loadNext();
+            });
+
+            loadNext();
         }
     </script>
 </body>
