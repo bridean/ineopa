@@ -2,15 +2,151 @@
 <html lang="en">
 <head>
     <meta charset="utf-8" />
-    <title>Hello World</title>
+    <title>Triangle With Spinning Corners — 004</title>
     <link rel="stylesheet" href="../main.css" />
+    <style>
+        /* Optional centering for the demo */
+        .wrap {
+            display: flex;
+            align-items: center;
+            justify-content: center;
+            min-height: 70vh;
+        }
+    </style>
+    <!--
+        Geometry notes (equilateral):
+        - Big side s=200, altitude h = s*√3/2 ≈ 173.205.
+        - Small side s=50, circumradius R = s/√3 ≈ 28.8675.
+        Small triangle centered at (0,0): points (0,-R), (s/2, R/2), (-s/2, R/2)
+    -->
+    
+    <!-- No external network resources used. -->
+    
+    
+    
+    
+    
+    
+    
+    
+    
+    
+    
+    
+    
+    
+    
+    
+    
+    
+    
+    
+    
+    
+    
+    
+    
+    
+    
+    
+    
+    
+    
+    
+    
+    
+    
+    
+    
+    
+    
+    
+    
+    
+    
+    
+    
+    
+    
+    
+    
+    
+    
+    
+    
+    
+    
+    
+    
+    
 </head>
 <body>
-    <h1>Hello world, I'm 004.html</h1>
+    <h1>004: Triangle with spinning corner triangles</h1>
+    <div class="wrap">
+        <!--
+            viewBox padded so the rotating small triangles never get clipped.
+        -->
+        <svg width="360" height="320" viewBox="-50 -50 300 280" role="img" aria-label="Large triangle with three smaller rotating triangles at its corners">
+            <!-- Big equilateral triangle: side 200, altitude ≈ 173.205 -->
+            <polygon
+                points="100,0 0,173.205 200,173.205"
+                fill="orange"
+                fill-opacity="0.75"
+                stroke="white"
+                stroke-width="4"
+            />
+
+            <!-- Small triangle geometry (side 50):
+                 R = 50/√3 ≈ 28.8675
+                 Points (centered at origin): (0,-28.8675) (25,14.4337) (-25,14.4337)
+            -->
+            <!-- Top vertex: (100, 0) -->
+            <g transform="translate(100,0)">
+                <g>
+                    <polygon
+                        points="0,-28.8675 25,14.4337 -25,14.4337"
+                        fill="orange"
+                        fill-opacity="0.75"
+                        stroke="white"
+                        stroke-width="2"
+                    />
+                    <animateTransform attributeName="transform" attributeType="XML" type="rotate" from="0 0 0" to="360 0 0" dur="3s" repeatCount="indefinite" />
+                </g>
+            </g>
+
+            <!-- Bottom-left vertex: (0, 173.205) -->
+            <g transform="translate(0,173.205)">
+                <g>
+                    <polygon
+                        points="0,-28.8675 25,14.4337 -25,14.4337"
+                        fill="orange"
+                        fill-opacity="0.75"
+                        stroke="white"
+                        stroke-width="2"
+                    />
+                    <animateTransform attributeName="transform" attributeType="XML" type="rotate" from="0 0 0" to="360 0 0" dur="4s" repeatCount="indefinite" />
+                </g>
+            </g>
+
+            <!-- Bottom-right vertex: (200, 173.205) -->
+            <g transform="translate(200,173.205)">
+                <g>
+                    <polygon
+                        points="0,-28.8675 25,14.4337 -25,14.4337"
+                        fill="orange"
+                        fill-opacity="0.75"
+                        stroke="white"
+                        stroke-width="2"
+                    />
+                    <animateTransform attributeName="transform" attributeType="XML" type="rotate" from="0 0 0" to="360 0 0" dur="5s" repeatCount="indefinite" />
+                </g>
+            </g>
+        </svg>
+    </div>
+
     <script src="../test-page-report.js"></script>
+    
+    
 </body>
 </html>
-
-
-
 

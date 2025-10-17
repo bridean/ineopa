@@ -6,7 +6,160 @@
     <link rel="stylesheet" href="../main.css" />
 </head>
 <body>
-    <h1>Hello world, I'm 005.html</h1>
+    <h1>First Anaglyph Attempt with Codex</h1>
+
+    <!-- Programmatic stereoscopic anaglyph wireframe cube (150% scale) -->
+    <div style="display:flex; justify-content:center; margin: 1.5rem 0;">
+        <svg id="anaglyph-cube" width="780" height="480" viewBox="0 0 780 480" role="img" aria-label="Stereoscopic anaglyph wireframe cube"></svg>
+    </div>
+    <p style="text-align:center; color:#9fd; font-size:0.9rem; margin-top: -0.5rem;">Use red/cyan 3D glasses (red on left eye).</p>
+
+    <script>
+        (function () {
+            const svg = document.getElementById('anaglyph-cube');
+            const width = svg.viewBox.baseVal.width || svg.clientWidth;
+            const height = svg.viewBox.baseVal.height || svg.clientHeight;
+            const cx = width / 2;
+            const cy = height / 2;
+
+            // Tunable parameters for a natural feel
+            const side = 210;        // cube side length (~150% of old 140)
+            const z0 = 900;          // cube center distance from origin (camera baseline)
+            const IOD = 65;          // inter-ocular distance (mm-ish units here)
+            const f = 850;           // focal length (controls perspective strength)
+            const rollEye = 0.4;     // subtle ocular torsion in degrees (per-eye, opposite sign)
+
+            // Slightly tilted cube orientation (feels less "mathematical")
+            const cubeYaw = 22;      // degrees (Y axis)
+            const cubePitch = -12;   // degrees (X axis)
+            const cubeRoll = 4;      // degrees (Z axis)
+
+            // Build base cube around origin before world transform
+            const h = side / 2;
+            const baseVerts = [
+                [-h, -h, -h], [ h, -h, -h],
+                [-h,  h, -h], [ h,  h, -h],
+                [-h, -h,  h], [ h, -h,  h],
+                [-h,  h,  h], [ h,  h,  h]
+            ];
+
+            // Cube edges (pairs of vertex indices)
+            const edges = [
+                [0,1],[1,3],[3,2],[2,0],
+                [4,5],[5,7],[7,6],[6,4],
+                [0,4],[1,5],[2,6],[3,7]
+            ];
+
+            // 3D math helpers
+            const d2r = (d) => d * Math.PI / 180;
+            function rotX(a){
+                const c=Math.cos(a), s=Math.sin(a);
+                return [
+                    [1,0,0],
+                    [0,c,-s],
+                    [0,s, c]
+                ];
+            }
+            function rotY(a){
+                const c=Math.cos(a), s=Math.sin(a);
+                return [
+                    [ c,0, s],
+                    [ 0,1, 0],
+                    [-s,0, c]
+                ];
+            }
+            function rotZ(a){
+                const c=Math.cos(a), s=Math.sin(a);
+                return [
+                    [ c,-s,0],
+                    [ s, c,0],
+                    [ 0, 0,1]
+                ];
+            }
+            function matMul(A,B){
+                const r=[[0,0,0],[0,0,0],[0,0,0]];
+                for(let i=0;i<3;i++){
+                    for(let j=0;j<3;j++){
+                        r[i][j]=A[i][0]*B[0][j]+A[i][1]*B[1][j]+A[i][2]*B[2][j];
+                    }
+                }
+                return r;
+            }
+            function matVec(M,v){
+                return [
+                    M[0][0]*v[0]+M[0][1]*v[1]+M[0][2]*v[2],
+                    M[1][0]*v[0]+M[1][1]*v[1]+M[1][2]*v[2],
+                    M[2][0]*v[0]+M[2][1]*v[1]+M[2][2]*v[2]
+                ];
+            }
+            function transpose(M){
+                return [
+                    [M[0][0],M[1][0],M[2][0]],
+                    [M[0][1],M[1][1],M[2][1]],
+                    [M[0][2],M[1][2],M[2][2]]
+                ];
+            }
+
+            // World transform for the cube (rotation then translate to z0)
+            const Rw = matMul(rotZ(d2r(cubeRoll)), matMul(rotY(d2r(cubeYaw)), rotX(d2r(cubePitch))));
+            const worldVerts = baseVerts.map(v => {
+                const r = matVec(Rw, v);
+                return [r[0], r[1], r[2] + z0];
+            });
+
+            // Build per-eye camera orientation pointing to the cube center
+            function cameraMatrix(eye){
+                const target = [0, 0, z0];
+                const dx = target[0] - eye[0];
+                const dy = target[1] - eye[1];
+                const dz = target[2] - eye[2];
+                const yaw = Math.atan2(dx, dz);           // toe-in emerges naturally
+                const pitch = Math.atan2(dy, Math.hypot(dx, dz));
+                // Small ocular torsion (roll), opposite per eye
+                const roll = d2r(eye[0] < 0 ? -rollEye : rollEye);
+                // Compose: yaw, then pitch, then roll
+                const R = matMul(rotZ(roll), matMul(rotY(yaw), rotX(pitch)));
+                return R;
+            }
+
+            function projectPoint(pw, eye, Rc){
+                // World to camera: Rc^T * (pw - eye)
+                const t = [pw[0]-eye[0], pw[1]-eye[1], pw[2]-eye[2]];
+                const Rt = transpose(Rc);
+                const pc = matVec(Rt, t);
+                const x = (f * pc[0]) / pc[2];
+                const y = (f * pc[1]) / pc[2];
+                return [cx + x, cy - y];
+            }
+
+            function drawEdges(color, eye, groupId){
+                const Rc = cameraMatrix(eye);
+                const g = document.createElementNS('http://www.w3.org/2000/svg', 'g');
+                g.setAttribute('id', groupId);
+                g.setAttribute('fill', 'none');
+                g.setAttribute('stroke', color);
+                g.setAttribute('stroke-width', '3');
+                g.setAttribute('stroke-linecap', 'round');
+                g.setAttribute('stroke-linejoin', 'round');
+                g.setAttribute('opacity', '0.9');
+                for(const [a,b] of edges){
+                    const p1 = projectPoint(worldVerts[a], eye, Rc);
+                    const p2 = projectPoint(worldVerts[b], eye, Rc);
+                    const line = document.createElementNS('http://www.w3.org/2000/svg', 'line');
+                    line.setAttribute('x1', p1[0].toFixed(2));
+                    line.setAttribute('y1', p1[1].toFixed(2));
+                    line.setAttribute('x2', p2[0].toFixed(2));
+                    line.setAttribute('y2', p2[1].toFixed(2));
+                    g.appendChild(line);
+                }
+                svg.appendChild(g);
+            }
+
+            // Eyes: left (red), right (cyan)
+            drawEdges('#ff2a2a', [-IOD/2, 0, 0], 'left-eye');
+            drawEdges('#00ffff', [ IOD/2, 0, 0], 'right-eye');
+        })();
+    </script>
     <script src="../test-page-report.js"></script>
 </body>
 </html>
